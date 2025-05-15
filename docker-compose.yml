@@ -1,0 +1,56 @@
+services:
+  rabbitmq:
+    build: ./services/rabbitmq
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "check_running" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  endpoint:
+    build: ./services/endpoint
+    environment:
+      RABBITMQ_QUEUE: "count-queue"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_EXCHANGE: "actions"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./shared:/shared
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f -s -o /dev/null http://localhost:8080/health || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s # Give your app time to start before checking
+      retries: 3
+
+
+  frontend:
+    build: ./services/frontend
+    environment:
+      BACKEND_URL: "http://endpoint:8080"
+    ports:
+      - "8080:80"
+    volumes:
+      - ./shared:/shared
+    depends_on:
+      endpoint:
+        condition: service_healthy
+
+
+  receiver:
+    build: ./services/receiver
+    environment:
+      RABBITMQ_QUEUE: "count-queue"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_EXCHANGE: "actions"
+    volumes:
+      - ./shared:/shared
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

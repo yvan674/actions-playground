@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Counter</title></head>
+<body style="font-family:sans-serif;text-align:center;margin-top:50px;">
+  <h1>Counter: <span id="count">–</span></h1>
+  <button id="incBtn">Increment</button>
+<script>
+  // injection point—envsubst will replace this
+  const API_BASE = "${BACKEND_URL}";
+
+  async function fetchCount() {
+    const res = await fetch(API_BASE + '/api/count');
+    const { count } = await res.json();
+    document.getElementById('count').textContent = count;
+  }
+
+  async function increment() {
+    const res = await fetch(API_BASE + '/api/count/increment', {
+      method: 'POST'
+    });
+    const { count } = await res.json();
+    document.getElementById('count').textContent = count;
+  }
+
+  document.getElementById('incBtn').addEventListener('click', increment);
+  window.addEventListener('DOMContentLoaded', fetchCount);
+</script>
+</body>
+</html>
