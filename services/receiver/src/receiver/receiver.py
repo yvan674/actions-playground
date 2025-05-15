@@ -10,7 +10,7 @@ logger = getLogger(__name__)
 
 
 async def process_message(msg: IncomingMessage):
-    with msg.process():
+    async with msg.process():
         # Decode the message and check if it has a JSON body with key "count"
         if msg.body:
             try:
