@@ -23,7 +23,7 @@ services:
     volumes:
       - ./shared:/shared
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f -s -o /dev/null http://localhost:8080/health || exit 1" ]
+      test: [ "CMD", "python", "/app/src/healthcheck.py" ]
       interval: 30s
       timeout: 5s
       start_period: 15s # Give your app time to start before checking
@@ -32,8 +32,6 @@ services:
 
   frontend:
     build: ./services/frontend
-    environment:
-      BACKEND_URL: "http://endpoint:8080"
     ports:
       - "8080:80"
     volumes:

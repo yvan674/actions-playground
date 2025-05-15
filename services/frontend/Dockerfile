@@ -4,8 +4,8 @@ RUN apk add --no-cache gettext
 
 WORKDIR /usr/share/nginx/html
 
-COPY src/index.html.template .
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY src/index.html .
 
-CMD envsubst '${BACKEND_URL}' < index.html.template > index.html \
-    && nginx -g 'daemon off;'
+COPY src/nginx.conf /etc/nginx/conf.d/default.conf
+
+CMD ["nginx", "-g", "daemon off;"]
