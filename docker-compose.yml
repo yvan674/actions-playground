@@ -27,7 +27,6 @@ services:
       start_period: 15s # Give your app time to start before checking
       retries: 3
 
-
   frontend:
     build: ./services/frontend
     ports:
@@ -37,7 +36,6 @@ services:
     depends_on:
       endpoint:
         condition: service_healthy
-
 
   receiver:
     build: ./services/receiver
