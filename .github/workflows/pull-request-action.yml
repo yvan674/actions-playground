@@ -3,8 +3,8 @@ run-name: Pull request ${{ github.ref }} opened
 on:
   pull_request:
     types: [opened, reopened]
-#    branches:
-#      - "main"
+    branches:
+      - "main"
 jobs:
   Pull-Request-On-Main:
     runs-on: ubuntu-latest
@@ -12,3 +12,12 @@ jobs:
       - run: echo "Running a job due to pull request ${{ github.ref }}"
       - run: echo "Job was triggered due to a ${{ github.event_name }} event."
       - run: echo "The triggering branch was ${{ github.head_ref }} pulling to ${{ github.base_ref }}."
+      - name: "Authenticating and checking out repository"
+        uses: ./.github/actions/checkout-and-secrets-pull
+        with:
+          project_id: 'experiments-459907'
+          workload_identity_provider: 'https://iam.googleapis.com/projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'
+      - name: List repository location
+        run: echo "${{ github.workspace }}"
+      - name: List files in repository
+        run: ls ${{ github.workspace }}
