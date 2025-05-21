@@ -8,14 +8,14 @@ on:
     paths:
       - services/receiver/**
       - shared/**
-      - receiver.yml
+      - .github/workflows/receiver.yml
   push:
     branches:
       - staging
     paths:
       - services/receiver/**
       - shared/**
-      - receiver.yml
+      - .github/workflows/receiver.yml
 env:
   GCP_PROJECT_ID: 'experiments-459907'
   GCP_WORKLOAD_IDENTITY_PROVIDER: 'projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'

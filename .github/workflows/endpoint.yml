@@ -9,14 +9,14 @@ on:
     paths:
       - services/endpoint/**
       - shared/**
-      - endpoint.yml
+      - .github/workflows/endpoint.yml
   push:
     branches:
       - staging
     paths:
       - services/endpoint/**
       - shared/**
-      - endpoint.yml
+      - .github/workflows/endpoint.yml
 jobs:
   endpoint-tests:
     runs-on: ubuntu-latest
