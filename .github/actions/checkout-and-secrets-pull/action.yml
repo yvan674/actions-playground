@@ -1,0 +1,21 @@
+name: 'Checkout and Secrets Pull'
+description: 'Checksout the code, authenticates with Google Cloud, and pulls secrets from Google Secret Manager.'
+
+inputs:
+  workload_identity_provider:
+    description: 'GCP Workload Identity Provider'
+    required: true
+  project_id:
+    description: 'GCP Project ID'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Pull code'
+      uses: 'actions/checkout@v4'
+
+    - name: 'Authenticate with Google'
+      with:
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
+        project_id: ${{ inputs.project_id }}

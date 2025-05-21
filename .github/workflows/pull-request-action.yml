@@ -1,0 +1,12 @@
+on:
+  pull_request:
+    types: [opened, reopened]
+#    branches:
+#      - "main"
+jobs:
+  Pull-Request-On-Main:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Running a job due to pull request on main."
+      - run: echo "Job was triggered due to a ${{ github.event_name }} event."
+      - run: echo "The triggering branch was ${{ github.ref }} pulling to ${{ github.base_ref }}."
