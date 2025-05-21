@@ -1,23 +1,24 @@
-name: PR Receiver
-run-name: PR Receiver Tests ${{ github.base_ref }} ← ${{ github.head_ref }}
+name: PR Endpoint
+run-name: PR Endpoint Tests ${{ github.base_ref }} ← ${{ github.head_ref }}
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
       - main
+      - staging
     paths:
-      - services/receiver/**
+      - services/endpoint/**
       - shared/**
-      - .github/workflows/receiver-tests.yml
+      - endpoint.yml
   push:
     branches:
       - staging
     paths:
-      - services/receiver/**
+      - services/endpoint/**
       - shared/**
-      - .github/workflows/receiver-tests.yml
+      - endpoint.yml
 jobs:
-  receiver-tests:
+  endpoint-tests:
     runs-on: ubuntu-latest
     # Add "id-token" with the intended permissions.
     permissions:
