@@ -12,8 +12,10 @@ jobs:
       - run: echo "Running a job due to pull request ${{ github.ref }}"
       - run: echo "Job was triggered due to a ${{ github.event_name }} event."
       - run: echo "The triggering branch was ${{ github.head_ref }} pulling to ${{ github.base_ref }}."
-      - name: "Authenticating and checking out repository"
-        uses: ./.github/actions/checkout-and-secrets-pull
+      - name: 'Pull code'
+        uses: 'actions/checkout@v4'
+      - name: 'Authenticate with Google'
+        uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'experiments-459907'
           workload_identity_provider: 'https://iam.googleapis.com/projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'
