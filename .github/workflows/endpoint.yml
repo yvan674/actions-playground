@@ -1,0 +1,68 @@
+name: PR Endpoint
+run-name: PR Endpoint Tests ${{ github.base_ref }} ← ${{ github.head_ref }}
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - staging
+    paths:
+      - services/endpoint/**
+      - shared/**
+      - .github/workflows/endpoint.yml
+  push:
+    branches:
+      - staging
+    paths:
+      - services/endpoint/**
+      - shared/**
+      - .github/workflows/endpoint.yml
+jobs:
+  endpoint-tests:
+    runs-on: ubuntu-latest
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - run: echo "Job was triggered by a ${{ github.event_name }} event."
+
+      - name: 'Pull code'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Authenticate with Google'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'experiments-459907'
+          workload_identity_provider: 'projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'
+
+      - name: 'Get Secrets'
+        id: 'gcsm'  # Google Cloud Secret Manager
+        uses: 'google-github-actions/get-secretmanager-secrets@v2'
+        with:
+          secrets: |-
+            queue_name:experiments-459907/rabbitmq-queue
+            exchange_name:experiments-459907/rabbitmq-exchange
+
+      - name: 'Build Docker image for endpoint service'
+        run: |
+          docker build \
+            --tag yvan674/endpoint \
+            --file ${{ github.workspace }}/services/endpoint/Dockerfile \
+            ${{ github.workspace }}/services/endpoint
+
+      - name: 'Run Pytests for endpoint service'
+        run: |
+          docker run --rm \
+            --volume ${{ github.workspace }}/shared:/shared:ro \
+            -e RABBITMQ_HOST="localhost" \
+            -e RABBITMQ_EXCHANGE="${{ steps.gcsm.outputs.exchange_name }}" \
+            -e RABBITMQ_QUEUE="${{ steps.gcsm.outputs.queue_name }}" \
+            yvan674/endpoint \
+            pytest tests
+            
+            
+
+        
+      
+

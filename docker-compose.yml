@@ -13,10 +13,8 @@ services:
 
   endpoint:
     build: ./services/endpoint
-    environment:
-      RABBITMQ_QUEUE: "count-queue"
-      RABBITMQ_HOST: "rabbitmq"
-      RABBITMQ_EXCHANGE: "actions"
+    env_file:
+      - ./services/endpoint/.env
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -29,7 +27,6 @@ services:
       start_period: 15s # Give your app time to start before checking
       retries: 3
 
-
   frontend:
     build: ./services/frontend
     ports:
@@ -40,13 +37,10 @@ services:
       endpoint:
         condition: service_healthy
 
-
   receiver:
     build: ./services/receiver
-    environment:
-      RABBITMQ_QUEUE: "count-queue"
-      RABBITMQ_HOST: "rabbitmq"
-      RABBITMQ_EXCHANGE: "actions"
+    env_file:
+      - ./services/receiver/.env
     volumes:
       - ./shared:/shared
     depends_on:
