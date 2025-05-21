@@ -28,7 +28,7 @@ env:
   GCP_WORKLOAD_IDENTITY_PROVIDER: 'projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'
   GCP_ARTIFACT_REGISTRY_LOCATION: 'europe-west4'
   GCP_ARTIFACT_REGISTRY_REPOSITORY: 'actions-playground'
-  SERVICE_NAME: 'receiver'
+  SERVICE_NAME: 'endpoint'
 jobs:
   setup-and-secrets:
     runs-on: ubuntu-latest
