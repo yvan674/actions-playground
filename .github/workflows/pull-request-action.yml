@@ -39,3 +39,10 @@ jobs:
             s2:experiments-459907/another-secret
       - name: 'Echo Secrets'
         run: echo "s1=${{ steps.gcsm.outputs.s1 }}, s2=${{ steps.gcsm.outputs.s2 }}"
+      - name: 'Print OIDC Token'
+        run: |
+          echo "Retrieving OIDC Token..."
+          TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo "OIDC Token: $TOKEN"
+          echo "Decoded Token:"
+          echo $TOKEN | cut -d '.' -f2 | base64 --decode | jq .
