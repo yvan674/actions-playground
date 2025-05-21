@@ -1,7 +1,10 @@
 name: Pull Request
 run-name: Pull request ${{ github.ref }} opened
 on:
-  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
 jobs:
   Pull-Request-On-Main:
     runs-on: ubuntu-latest
@@ -25,22 +28,11 @@ jobs:
         run: echo "${{ github.workspace }}"
       - name: List files in repository
         run: ls ${{ github.workspace }}
-      - name: 'Echo creds'
-        run: cat ${{ steps.gcpauth.outputs.credentials_file_path }}
-      - name: 'Print OIDC Token'
-        run: |
-          echo "Retrieving OIDC Token..."
-          TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
-          echo "OIDC Token: $TOKEN"
-          echo "Decoded Token:"
-          echo $TOKEN | cut -d '.' -f2 | base64 --decode | jq .
       - name: 'Get Secrets'
         id: 'gcsm'  # Google Cloud Secret Manager
         uses: 'google-github-actions/get-secretmanager-secrets@v2'
         with:
           secrets: |-
-            s1:966464862995/secret-val
-            s2:966464862995/another-secret
-      - name: 'Echo Secrets'
-        run: echo "s1=${{ steps.gcsm.outputs.s1 }}, s2=${{ steps.gcsm.outputs.s2 }}"
+            s1:experiments-459907/secret-val
+            s2:experiments-459907/another-secret
 
