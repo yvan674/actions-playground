@@ -8,6 +8,10 @@ on:
 jobs:
   Pull-Request-On-Main:
     runs-on: ubuntu-latest
+    # Add "id-token" with the intended permissions.
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     steps:
       - run: echo "Running a job due to pull request ${{ github.ref }}"
       - run: echo "Job was triggered due to a ${{ github.event_name }} event."
