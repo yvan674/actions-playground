@@ -1,4 +1,4 @@
-name: PR Receiver
+name: Receiver
 run-name: >-
   ${{ github.event_name == 'pull_request'
     && format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
@@ -16,7 +16,8 @@ on:
       - shared/**
       - .github/workflows/receiver.yml
   push:
-    # Run this on push to staging or main, since any push MUST be checked
+    # Run this on push to staging or main, since any push MUST be a PR merge
+    # or require immediate deployment
     branches:
       - staging
       - main

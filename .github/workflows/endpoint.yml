@@ -1,4 +1,4 @@
-name: PR Endpoint
+name: Endpoint
 run-name: >-
   ${{ github.event_name == 'pull_request'
       && format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
@@ -14,8 +14,11 @@ on:
       - shared/**
       - .github/workflows/endpoint.yml
   push:
+    # Run this on push to staging or main, since any push MUST be a PR merge
+    # or require immediate deployment
     branches:
       - staging
+      - main
     paths:
       - services/endpoint/**
       - shared/**
