@@ -1,7 +1,12 @@
-name: PR Receiver
-run-name: PR Receiver Tests ${{ github.base_ref }} ← ${{ github.head_ref }}
+name: Receiver
+run-name: >-
+  ${{ github.event_name == 'pull_request'
+    && format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
+    || 'Publish Receiver Service' }}
+
 on:
   pull_request:
+    # Run tests on pull_request creation/sync/reopen
     types: [opened, synchronize, reopened]
     branches:
       - main
@@ -11,6 +16,8 @@ on:
       - shared/**
       - .github/workflows/receiver.yml
   push:
+    # Run this on push to staging or main, since any push MUST be a PR merge
+    # or require immediate deployment
     branches:
       - staging
       - main
@@ -55,14 +62,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 'Build Docker image for endpoint service'
+      - name: Build Docker image for ${{ env.SERVICE_NAME }} service
         run: |
           docker build \
             --tag yvan674/${{ env.SERVICE_NAME }} \
             --file ${{ github.workspace }}/services/${{ env.SERVICE_NAME }}/Dockerfile \
             ${{ github.workspace }}/services/${{ env.SERVICE_NAME }}
 
-      - name: 'Run Pytests for endpoint service'
+      - name: Run Pytests for ${{ env.SERVICE_NAME }} service
         run: |
           docker run --rm \
             --volume ${{ github.workspace }}/shared:/shared:ro \
@@ -75,6 +82,8 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: tests
+    # The only time we push is when we want staging or main to reflect the newest version
+    # So, publishing on push to staging or main is the right conditional
     if: ${{ github.event_name == 'push' }}
     permissions:
       contents: read
