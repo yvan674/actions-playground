@@ -1,5 +1,5 @@
-name: Pull Request
-run-name: Pull request ${{ github.ref }} opened
+name: PR Endpoint
+run-name: PR Endpoint Tests ${{ github.base_ref }} ← ${{ github.head_ref }}
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -13,7 +13,6 @@ jobs:
       contents: 'read'
       id-token: 'write'
     steps:
-      - run: echo "Running a job due to pull request ${{ github.ref }}"
       - run: echo "Job was triggered due to a ${{ github.event_name }} event."
       - run: echo "The triggering branch was ${{ github.head_ref }} pulling to ${{ github.base_ref }}."
       - name: 'Pull code'
@@ -35,4 +34,5 @@ jobs:
           secrets: |-
             s1:experiments-459907/secret-val
             s2:experiments-459907/another-secret
+      
 
