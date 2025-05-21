@@ -5,6 +5,14 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - main
+      - staging
+    paths:
+      - services/endpoint/**
+      - shared/**
+      - .github/workflows/endpoint-tests.yml
+  push:
+    branches:
+      - staging
     paths:
       - services/endpoint/**
       - shared/**

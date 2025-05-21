@@ -9,7 +9,13 @@ on:
       - services/receiver/**
       - shared/**
       - .github/workflows/receiver-tests.yml
-
+  push:
+    branches:
+      - staging
+    paths:
+      - services/receiver/**
+      - shared/**
+      - .github/workflows/receiver-tests.yml
 jobs:
   receiver-tests:
     runs-on: ubuntu-latest
