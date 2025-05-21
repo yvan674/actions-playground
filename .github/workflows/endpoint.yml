@@ -1,7 +1,8 @@
 name: PR Endpoint
-run-name: ${{ github.event_name == 'pull_request'
-  ? format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
-  : 'Publish Endpoint' }}
+run-name: >-
+  ${{ github.event_name == 'pull_request'
+      && format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
+      || 'Publish Endpoint Service' }}
 on:
   pull_request:
     types: [opened, synchronize, reopened]

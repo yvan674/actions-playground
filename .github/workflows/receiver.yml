@@ -1,7 +1,9 @@
 name: PR Receiver
-run-name: ${{ github.event_name == 'pull_request'
-  ? format('PR Receiver Test {0} ← {1}', github.base_ref, github.head_ref)
-  : 'Publish Receiver' }}
+run-name: >-
+  ${{ github.event_name == 'pull_request'
+    && format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
+    || 'Publish Receiver Service' }}
+
 on:
   pull_request:
     # Run tests on pull_request creation/sync/reopen
