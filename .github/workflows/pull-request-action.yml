@@ -27,3 +27,12 @@ jobs:
         run: echo "${{ github.workspace }}"
       - name: List files in repository
         run: ls ${{ github.workspace }}
+      - name: 'Get Secrets'
+        id: 'gcsm'  # Google Cloud Secret Manager
+        uses: 'google-github-actions/get-secretmanager-secrets@v2'
+        with:
+          secrets: |-
+            s1:experiments-459907/secret-val
+            s2:experiments-459907/another-secret
+      - name: 'Echo Secrets'
+        run: echo "s1=${{ steps.gcsm.outputs.s1 }}, s2=${{ steps.gcsm.outputs.s2 }}"
