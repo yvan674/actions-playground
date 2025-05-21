@@ -1,5 +1,7 @@
 name: PR Endpoint
-run-name: PR Endpoint Tests ${{ github.base_ref }} ← ${{ github.head_ref }}
+run-name: ${{ github.event_name == 'pull_request'
+  ? format('PR Endpoint Test {0} ← {1}', github.base_ref, github.head_ref)
+  : 'Publish Endpoint' }}
 on:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -17,52 +19,98 @@ on:
       - services/endpoint/**
       - shared/**
       - .github/workflows/endpoint.yml
+env:
+  GCP_PROJECT_ID: 'experiments-459907'
+  GCP_WORKLOAD_IDENTITY_PROVIDER: 'projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'
+  GCP_ARTIFACT_REGISTRY_LOCATION: 'europe-west4'
+  GCP_ARTIFACT_REGISTRY_REPOSITORY: 'actions-playground'
+  SERVICE_NAME: 'receiver'
 jobs:
-  endpoint-tests:
+  setup-and-secrets:
     runs-on: ubuntu-latest
-    # Add "id-token" with the intended permissions.
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
+    outputs:
+      queue_name: ${{ steps.gcsm.outputs.queue_name }}
+      exchange_name: ${{ steps.gcsm.outputs.exchange_name }}
     steps:
-      - run: echo "Job was triggered by a ${{ github.event_name }} event."
-
-      - name: 'Pull code'
-        uses: 'actions/checkout@v4'
-
-      - name: 'Authenticate with Google'
-        uses: 'google-github-actions/auth@v2'
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          project_id: 'experiments-459907'
-          workload_identity_provider: 'projects/966464862995/locations/global/workloadIdentityPools/github-actions/providers/github-oidc'
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
 
-      - name: 'Get Secrets'
-        id: 'gcsm'  # Google Cloud Secret Manager
-        uses: 'google-github-actions/get-secretmanager-secrets@v2'
+      - name: Get secrets from Secret Manager
+        id: gcsm
+        uses: google-github-actions/get-secretmanager-secrets@v2
         with:
           secrets: |-
-            queue_name:experiments-459907/rabbitmq-queue
-            exchange_name:experiments-459907/rabbitmq-exchange
+            queue_name:${{ env.GCP_PROJECT_ID }}/rabbitmq-queue
+            exchange_name:${{ env.GCP_PROJECT_ID }}/rabbitmq-exchange
+  tests:
+    runs-on: ubuntu-latest
+    needs: setup-and-secrets
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: 'Build Docker image for endpoint service'
+      - name: Build Docker image for ${{ env.SERVICE_NAME }} service
         run: |
           docker build \
-            --tag yvan674/endpoint \
-            --file ${{ github.workspace }}/services/endpoint/Dockerfile \
-            ${{ github.workspace }}/services/endpoint
+            --tag yvan674/${{ env.SERVICE_NAME }} \
+            --file ${{ github.workspace }}/services/${{ env.SERVICE_NAME }}/Dockerfile \
+            ${{ github.workspace }}/services/${{ env.SERVICE_NAME }}
 
-      - name: 'Run Pytests for endpoint service'
+      - name: Run Pytests for ${{ env.SERVICE_NAME }} service
         run: |
           docker run --rm \
             --volume ${{ github.workspace }}/shared:/shared:ro \
             -e RABBITMQ_HOST="localhost" \
-            -e RABBITMQ_EXCHANGE="${{ steps.gcsm.outputs.exchange_name }}" \
-            -e RABBITMQ_QUEUE="${{ steps.gcsm.outputs.queue_name }}" \
-            yvan674/endpoint \
+            -e RABBITMQ_EXCHANGE="${{ needs.setup-and-secrets.outputs.exchange_name }}" \
+            -e RABBITMQ_QUEUE="${{ needs.setup-and-secrets.outputs.queue_name }}" \
+            yvan674/${{ env.SERVICE_NAME }} \
             pytest tests
             
-            
+  publish:
+    runs-on: ubuntu-latest
+    needs: tests
+    # The only time we push is when we want staging or main to reflect the newest version
+    # So, publishing on push to staging or main is the right conditional
+    if: ${{ github.event_name == 'push' }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        
-      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
 
+      - name: Determine image tag
+        id: set-tag
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "tag=staging" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev
+
+      - name: Build Docker image for publishing
+        run: |
+          docker build \
+            --tag ${{ env.GCP_ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ steps.set-tag.outputs.tag }} \
+            --file ${{ github.workspace }}/services/${{ env.SERVICE_NAME }}/Dockerfile \
+            ${{ github.workspace }}/services/${{ env.SERVICE_NAME }}
+
+      - name: Push Docker image to Artifact Registry
+        run: |
+          docker push \
+            ${{ env.GCP_ARTIFACT_REGISTRY_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.GCP_ARTIFACT_REGISTRY_REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ steps.set-tag.outputs.tag }}
