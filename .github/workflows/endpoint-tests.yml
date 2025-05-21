@@ -43,6 +43,8 @@ jobs:
         run: |
           docker run --rm \
             --volume ${{ github.workspace }}/shared:/shared:ro \
+            -e RABBITMQ_HOST="localhost" \
+            -e RABBITMQ_EXCHANGE="${{ steps.gcsm.outputs.exchange_name }}" \
             yvan674/endpoint \
             pytest tests
             
