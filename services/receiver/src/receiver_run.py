@@ -4,9 +4,10 @@ import logging
 from receiver import process_message
 from receiver.config import settings
 from commons.rabbitmq_utils import rabbitmq_consumer
+from commons.logging.setup_logging import setup_logging
 
 
-logging.basicConfig(level="INFO")
+setup_logging(service_name="receiver", log_level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
