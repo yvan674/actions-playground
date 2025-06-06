@@ -8,3 +8,4 @@ pytest-asyncio~=0.26.0
 pytest-mock~=3.14.0
 tenacity~=9.1.2
 uvicorn~=0.34.2
+google-cloud-logging~=3.12.1
