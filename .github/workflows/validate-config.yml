@@ -1,0 +1,37 @@
+name: Validate config reusable
+
+on:
+  workflow_call:
+    inputs:
+      target_environment:
+        description: GitHub environment to use for this validation run.
+        required: true
+        type: string
+
+jobs:
+  validate-config:
+    name: Validate config in ${{ inputs.target_environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests action
+        uses: ./.github/actions/run-tests
+        with:
+          service_name: ${{ vars['SERVICE_NAME'] }}
+          environment_value: ${{ vars['ENVIRONMENT'] }}
+          api_url: ${{ vars['API_URL'] }}
+          project_id: ${{ vars['PROJECT_ID'] }}
+          api_key: ${{ secrets['API_KEY'] }}
+          workload_identity_provider: ${{ secrets['WORKLOAD_IDENTITY_PROVIDER'] }}
+
+      - name: Log vars action
+        uses: ./.github/actions/log-vars
+        with:
+          service_name: ${{ vars['SERVICE_NAME'] }}
+          environment_value: ${{ vars['ENVIRONMENT'] }}
+          api_url: ${{ vars['API_URL'] }}
+          project_id: ${{ vars['PROJECT_ID'] }}
+          github_environment: ${{ inputs.target_environment }}

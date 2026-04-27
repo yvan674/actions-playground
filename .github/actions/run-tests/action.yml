@@ -1,0 +1,57 @@
+name: Run tests
+description: Validates required GitHub variables and secrets are present.
+inputs:
+  service_name:
+    description: SERVICE_NAME variable
+    required: false
+    default: ""
+  environment_value:
+    description: ENVIRONMENT variable
+    required: false
+    default: ""
+  api_url:
+    description: API_URL variable
+    required: false
+    default: ""
+  project_id:
+    description: PROJECT_ID variable
+    required: false
+    default: ""
+  api_key:
+    description: API_KEY secret
+    required: false
+    default: ""
+  workload_identity_provider:
+    description: WORKLOAD_IDENTITY_PROVIDER secret
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Check required vars and secrets
+      shell: bash
+      env:
+        SERVICE_NAME: ${{ inputs.service_name }}
+        ENVIRONMENT: ${{ inputs.environment_value }}
+        API_URL: ${{ inputs.api_url }}
+        PROJECT_ID: ${{ inputs.project_id }}
+        API_KEY: ${{ inputs.api_key }}
+        WORKLOAD_IDENTITY_PROVIDER: ${{ inputs.workload_identity_provider }}
+      run: |
+        set -euo pipefail
+
+        missing=()
+
+        [ -n "${SERVICE_NAME}" ] || missing+=("SERVICE_NAME")
+        [ -n "${ENVIRONMENT}" ] || missing+=("ENVIRONMENT")
+        [ -n "${API_URL}" ] || missing+=("API_URL")
+        [ -n "${PROJECT_ID}" ] || missing+=("PROJECT_ID")
+        [ -n "${API_KEY}" ] || missing+=("API_KEY")
+        [ -n "${WORKLOAD_IDENTITY_PROVIDER}" ] || missing+=("WORKLOAD_IDENTITY_PROVIDER")
+
+        if [ "${#missing[@]}" -gt 0 ]; then
+          echo "Missing required values: ${missing[*]}"
+          exit 1
+        fi
+
+        echo "All required variables and secrets are present."
