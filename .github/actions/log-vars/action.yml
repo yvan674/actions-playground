@@ -1,0 +1,41 @@
+name: Log vars
+description: Logs configured variable values and the active GitHub environment.
+inputs:
+  service_name:
+    description: SERVICE_NAME variable
+    required: false
+    default: ""
+  environment_value:
+    description: ENVIRONMENT variable
+    required: false
+    default: ""
+  api_url:
+    description: API_URL variable
+    required: false
+    default: ""
+  project_id:
+    description: PROJECT_ID variable
+    required: false
+    default: ""
+  github_environment:
+    description: The GitHub environment currently used by this job
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Print variable values
+      shell: bash
+      env:
+        SERVICE_NAME: ${{ inputs.service_name }}
+        ENVIRONMENT: ${{ inputs.environment_value }}
+        API_URL: ${{ inputs.api_url }}
+        PROJECT_ID: ${{ inputs.project_id }}
+        GITHUB_ENVIRONMENT: ${{ inputs.github_environment }}
+      run: |
+        set -euo pipefail
+
+        echo "GitHub environment: ${GITHUB_ENVIRONMENT}"
+        echo "SERVICE_NAME: ${SERVICE_NAME}"
+        echo "ENVIRONMENT: ${ENVIRONMENT}"
+        echo "API_URL: ${API_URL}"
+        echo "PROJECT_ID: ${PROJECT_ID}"

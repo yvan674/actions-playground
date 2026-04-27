@@ -1,0 +1,16 @@
+name: Release
+run-name: >-
+  ${{ format('Actions playground release to prod deployment from tag {0}', github.ref_name) }}
+on:
+  push:
+    # Run this on tag
+    tags:
+      - release-*
+
+jobs:
+  validate-config:
+    uses: ./.github/workflows/validate-config.yml
+    with:
+      target_environment: prod
+    secrets: inherit
+
