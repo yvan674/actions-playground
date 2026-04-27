@@ -1,6 +1,6 @@
 name: Release
 run-name: >-
-  ${{ format('Publish Custodian to prod deployment from tag {0}', github.ref_name) }}
+  ${{ format('Actions playground release to prod deployment from tag {0}', github.ref_name) }}
 on:
   push:
     # Run this on tag

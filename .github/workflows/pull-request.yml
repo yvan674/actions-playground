@@ -1,7 +1,7 @@
 name: Pull request
 run-name: >-
-  ${{ github.event_name == 'pull_request' && format('Custodian PR Test {0} <- {1}', github.base_ref, github.head_ref)
-    || github.ref == 'refs/heads/main' && format('Publish Custodian to staging deployment from branch {0}', github.ref_name) }}
+  ${{ github.event_name == 'pull_request' && format('Actions Playground PR Test {0} <- {1}', github.base_ref, github.head_ref)
+    || github.ref == 'refs/heads/main' && format('Running Actions Playground merge to staging deployment from branch {0}', github.ref_name) }}
 on:
   pull_request:
     # Run tests on pull_request creation/sync/reopen
