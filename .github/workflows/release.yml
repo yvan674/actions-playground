@@ -11,6 +11,6 @@ jobs:
   validate-config:
     uses: ./.github/workflows/validate-config.yml
     with:
-      target_environment: prod
+      target_environment: production
     secrets: inherit
 
